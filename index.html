@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>ITE升级管理软件</title>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.3,user-scalable=0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <script src="js/jquery.min.js"></script>
+  <script src="js/jquery.mloading.js"></script>
+  <script src="js/bootstrap-switch.js"></script>
+  <link rel="stylesheet" href="css/jquery.mloading.css">
+  <link rel="stylesheet" href="css/bootstrap-switch.css">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <!-- <link href="square/blue.css" rel="stylesheet"> -->
+</head>
+<style type="text/css">
+  input {
+    margin-right: 5px
+  }
+
+  h2 {
+    text-align: center;
+  }
+
+  label {
+    cursor: pointer;
+    margin-left: 3px;
+    vertical-align: middle;
+    font-size: 20px;
+  }
+
+  .logo {
+    height: 100px;
+    width: 214px;
+    margin: 0px auto;
+    background-image: url(img/WABON-LOGO.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  .row {
+    margin-top: 20px;
+  }
+
+  form {
+    background-color: #64D2FD;
+    padding: 3px;
+    border-radius: 7px;
+    width: 1140px;
+    margin-left: -15px;
+  }
+
+  .mid-layer {
+    width: 200px;
+    margin: 0px auto;
+  }
+
+  .ktaner {
+    width: 350px;
+    height: 380px;
+    /* border: 1px solid black; */
+    /* background-color: darkgray; */
+    border-radius: 5px;
+    margin: 0 auto;
+  }
+
+  .input-group {
+    margin: 10px 0
+  }
+
+  button {
+    width: 350px;
+    margin: 0px auto;
+  }
+  /* .switch{margin:10px 0} */
+  .dropdown{
+    display: flex;
+    /* height: 58px; */
+  }
+</style>
+
+<script>
+  $(document).ready(function () {
+    $("[name='my-checkbox']").bootstrapSwitch();
+    $(".send").click(function () {
+      seg = $(".segment").val() == '' ? 10 : $(".segment").val();
+      num = $(".list_num").val() == '' ? 101 : $(".list_num").val();
+      id = $(".idnum").val() == ''? 'a' : $(".idnum").val();
+      if (isNaN(seg) || isNaN(num)) {
+        reset("请输入数字参数")
+      }else if(isNaN(id)){
+        reset("ID错误")
+      }else{
+        $("body").mLoading();
+        state=$('input[name="my-checkbox"]').bootstrapSwitch('state') ? 'add' : 'delete';
+        sending();
+        timer=setInterval(sending,5000);
+        function sending(){
+          $.ajax({
+          method: 'get',
+          data: { action: "reboot", reboot: "Reboot", nocache: Math.random() * 1000000, update:state,id:id },
+          dataType: 'jsonp',
+          jsonp: 'callback',
+          url: 'http://192.168.' + seg.toString() + '.' + num.toString() + '/dev/info.cgi',
+          jsonpCallback:'callback',
+          error: function (XMLHttpRequest, textStatus, errorThrown) {
+            //alert(XMLHttpRequest.status);
+            //alert(XMLHttpRequest.readyState);
+            //alert(textStatus);
+            if (textStatus == 'timeout') {
+              clearInterval(timer);
+              reset("无法连接设备")
+              console.log("stop")
+            } else {
+              alert(XMLHttpRequest.status);
+              alert(XMLHttpRequest.readyState);
+              alert(textStatus);
+              reset('reload')
+            }
+
+          },
+          timeout: 3000,
+          success: function (data) {
+            if (data.state == 'false') {
+              clearInterval(timer);
+              reset('升级失败');
+            } else if(data.state == 'success'){
+              clearInterval(timer);
+              reset("升级成功");
+            }
+          }
+        })
+        }
+      
+      }
+    })
+  })
+  function GetQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+      return unescape(r[2]);
+    } else {
+      return null;
+    }
+  }
+  function reset(str) {
+    alert(str)
+    $("body").mLoading('hide');
+   //document.location.reload();
+  }
+  async function astest(name) {
+    console.log(name)
+  }
+
+</script>
+
+<body>
+  <div class="logo"></div>
+  <!-- <h2 style="font-family: 微软雅黑">ITE 升 级 管 理 软 件</h2> -->
+  <br />
+  <span></span>
+  <div class="ktaner">
+    <div class="input-group">
+      <div class="input-group-addon">网段</div>
+      <input type="text" class="form-control segment" placeholder="10">
+    </div>
+    <div class="input-group">
+      <div class="input-group-addon">终端IP</div>
+      <input type="text" class="form-control list_num" placeholder="101">
+    </div>
+    <div class="dropdown">
+      <div class="switch" data-on="danger" data-off="primary">
+        <input name="my-checkbox" class="create-switch" type="checkbox" checked="" />
+    </div>
+    </div>
+    <div class="input-group">
+      <div class="input-group-addon">ID</div>
+      <input type="text" class="form-control idnum" placeholder="请输入需要添加或删除的ID">
+    </div>
+    <button type="button" class="btn btn-danger send">升级</button>
+
+  </div>
+</body>
+<script>
+  
+</script>
+</html>
