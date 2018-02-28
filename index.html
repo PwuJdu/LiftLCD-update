@@ -103,7 +103,7 @@
         function sending(){
           $.ajax({
           method: 'get',
-          data: { action: "reboot", reboot: "Reboot", nocache: Math.random() * 1000000, update:state,id:id },
+          data: { },
           dataType: 'jsonp',
           jsonp: 'callback',
           url: 'http://192.168.' + seg.toString() + '.' + num.toString() + '/dev/info.cgi',
